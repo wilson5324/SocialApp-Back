@@ -1,0 +1,21 @@
+server:
+  port: 8081
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/social
+    username: postgres
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.default_schema: auth_users
+  sql:
+    init:
+      mode: always
+springdoc:
+  swagger-ui:
+    path: /docs
+jwt:
+  secret: 5e657129b22a97783bf85796c089284ec0043a1918422ff2b10fb663b4794913
+  expiration-ms: 86400000
