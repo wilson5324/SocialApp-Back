@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: social-db
+    environment:
+      POSTGRES_DB: social
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./ms-auth-users/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d social"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ms-auth-users:
+    build: ./ms-auth-users
+    container_name: ms-auth-users
+    environment:
+      DB_HOST: postgres
+      DB_USER: admin
+      DB_PASSWORD: admin
+      JWT_SECRET: 5e657129b22a97783bf85796c089284ec0043a1918422ff2b10fb663b4794913
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  ms-content:
+    build: ./ms-content
+    container_name: ms-content
+    environment:
+      DB_HOST: postgres
+      DB_USER: admin
+      DB_PASSWORD: admin
+      JWT_SECRET: 5e657129b22a97783bf85796c089284ec0043a1918422ff2b10fb663b4794913
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ms-auth-users:
+        condition: service_started
+    restart: on-failure
+
+volumes:
+  postgres_data:
